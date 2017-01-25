@@ -1,0 +1,48 @@
+# == Schema Information
+#
+# Table name: invoices
+#
+#  id             :integer          not null, primary key
+#  account_id     :integer
+#  due_date       :date
+#  invoice_date   :date
+#  client_id      :integer
+#  notes          :text
+#  currency_id    :integer
+#  invoice_number :string
+#  total_amount   :decimal(19, 2)
+#  total_tax      :decimal(19, 2)
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
+#  status         :string
+#
+# Indexes
+#
+#  index_invoices_on_account_id   (account_id)
+#  index_invoices_on_client_id    (client_id)
+#  index_invoices_on_currency_id  (currency_id)
+#
+
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  account: one
+  due_date: 2016-12-26 16:23:23
+  invoice_date: 2016-12-26 16:23:23
+  client: one
+  notes: MyText
+  currency: one
+  invoice_number: MyString
+  total_amount: 9.99
+  total_tax: 9.99
+
+two:
+  account: two
+  due_date: 2016-12-26 16:23:23
+  invoice_date: 2016-12-26 16:23:23
+  client: two
+  notes: MyText
+  currency: two
+  invoice_number: MyString
+  total_amount: 9.99
+  total_tax: 9.99
