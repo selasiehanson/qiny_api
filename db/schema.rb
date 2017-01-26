@@ -12,6 +12,9 @@
 
 ActiveRecord::Schema.define(version: 20170103225818) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "account_details", force: :cascade do |t|
     t.integer  "user_id"
     t.integer  "account_id"
@@ -19,8 +22,8 @@ ActiveRecord::Schema.define(version: 20170103225818) do
     t.boolean  "enabled"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_account_details_on_account_id"
-    t.index ["user_id"], name: "index_account_details_on_user_id"
+    t.index ["account_id"], name: "index_account_details_on_account_id", using: :btree
+    t.index ["user_id"], name: "index_account_details_on_user_id", using: :btree
   end
 
   create_table "accounts", force: :cascade do |t|
@@ -40,7 +43,7 @@ ActiveRecord::Schema.define(version: 20170103225818) do
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
     t.integer  "account_id"
-    t.index ["account_id"], name: "index_clients_on_account_id"
+    t.index ["account_id"], name: "index_clients_on_account_id", using: :btree
   end
 
   create_table "currencies", force: :cascade do |t|
@@ -66,8 +69,8 @@ ActiveRecord::Schema.define(version: 20170103225818) do
     t.datetime "created_at",                                   null: false
     t.datetime "updated_at",                                   null: false
     t.decimal  "line_total",          precision: 19, scale: 2
-    t.index ["invoice_id"], name: "index_invoice_lines_on_invoice_id"
-    t.index ["product_id"], name: "index_invoice_lines_on_product_id"
+    t.index ["invoice_id"], name: "index_invoice_lines_on_invoice_id", using: :btree
+    t.index ["product_id"], name: "index_invoice_lines_on_product_id", using: :btree
   end
 
   create_table "invoices", force: :cascade do |t|
@@ -83,9 +86,9 @@ ActiveRecord::Schema.define(version: 20170103225818) do
     t.datetime "created_at",                              null: false
     t.datetime "updated_at",                              null: false
     t.string   "status"
-    t.index ["account_id"], name: "index_invoices_on_account_id"
-    t.index ["client_id"], name: "index_invoices_on_client_id"
-    t.index ["currency_id"], name: "index_invoices_on_currency_id"
+    t.index ["account_id"], name: "index_invoices_on_account_id", using: :btree
+    t.index ["client_id"], name: "index_invoices_on_client_id", using: :btree
+    t.index ["currency_id"], name: "index_invoices_on_currency_id", using: :btree
   end
 
   create_table "products", force: :cascade do |t|
@@ -99,7 +102,7 @@ ActiveRecord::Schema.define(version: 20170103225818) do
     t.datetime "created_at",       null: false
     t.datetime "updated_at",       null: false
     t.integer  "account_id"
-    t.index ["account_id"], name: "index_products_on_account_id"
+    t.index ["account_id"], name: "index_products_on_account_id", using: :btree
   end
 
   create_table "taxes", force: :cascade do |t|
@@ -110,7 +113,7 @@ ActiveRecord::Schema.define(version: 20170103225818) do
     t.datetime "created_at",                          null: false
     t.datetime "updated_at",                          null: false
     t.integer  "account_id"
-    t.index ["account_id"], name: "index_taxes_on_account_id"
+    t.index ["account_id"], name: "index_taxes_on_account_id", using: :btree
   end
 
   create_table "users", force: :cascade do |t|
@@ -122,4 +125,14 @@ ActiveRecord::Schema.define(version: 20170103225818) do
     t.string   "last_name"
   end
 
+  add_foreign_key "account_details", "accounts"
+  add_foreign_key "account_details", "users"
+  add_foreign_key "clients", "accounts"
+  add_foreign_key "invoice_lines", "invoices"
+  add_foreign_key "invoice_lines", "products"
+  add_foreign_key "invoices", "accounts"
+  add_foreign_key "invoices", "clients"
+  add_foreign_key "invoices", "currencies"
+  add_foreign_key "products", "accounts"
+  add_foreign_key "taxes", "accounts"
 end
