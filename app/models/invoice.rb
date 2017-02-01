@@ -40,25 +40,13 @@ class Invoice < ApplicationRecord
 
   has_many :invoice_lines
 
-  before_save :compute_total_amount
-  before_save :compute_total_tax
   before_create :create_invoice_number
 
   private
 
   scope :by_tenant, ->(account_id) { where(account_id: account_id) }
 
-  def compute_total_amount
-    self.total_amount = invoice_lines.inject(0) do |result, line|
-      result + line.line_total
-    end
-  end
-
-  def compute_total_tax
-    self.total_tax = invoice_lines.inject(0) do |result, line|
-      result + line.tax
-    end
-  end
+  
 
   def create_invoice_number
     count = Invoice.by_tenant(account_id).count

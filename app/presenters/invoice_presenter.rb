@@ -4,7 +4,7 @@ class InvoicePresenter
   attr_accessor :invoice_date, :due_date, :notes,
                 :client_id, :currency_id,
                 :invoice_number, :invoice_lines,
-                :account_id, :id
+                :account_id, :id, :total_amount, :total_tax
 
   validates :invoice_lines, presence: true
   validate :valid_due_date
@@ -12,20 +12,64 @@ class InvoicePresenter
   validate :invoice_lines_not_empty, if: -> { !invoice_lines.nil? }
   validate :absence_of_duplicate_lines, if: -> { !invoice_lines.nil? && !invoice_lines.empty? }
 
-  def save
-    # TODO: handle deleted items;
+  def save    
+    if id
+      update_invoice
+    else
+      create_invoice
+    end    
+  end
+
+  private
+
+  def create_invoice 
     Invoice.transaction do
-      @invoice = Invoice.save!(invoice_attributes)
+      
+      @invoice = Invoice.create!(invoice_attributes)
       lines = invoice_lines.map do |line|
         line_presenter = LinePresenter.new(line)
-        line_presenter.build(@invoice.id)
+        # line_presenter.build(@invoice.id)
       end
-      InvoiceLine.save!(lines)
+      @invoice.total_amount =compute_total_amount(lines)
+      @invoice.total_tax = compute_total_tax(lines)
+      @invoice.save
+      attached_lines = lines.map {|l| l.build(@invoice.id) }
+      InvoiceLine.create!(attached_lines)
       @invoice.id
     end
   end
 
-  private
+  def update_invoice
+    Invoice.transaction do 
+      compute_total_amount
+      compute_total_tax
+      @invoice = Invoice.find(id)
+      @invoice.save(invoice_attributes)
+      # TODO: handle deleted items;
+
+      invoice_lines.each do |line|
+        line_presenter = LinePresenter.new(line)
+        if(!line.id)
+          line_presenter.build(@invoice.id)        
+        end
+        line_presenter.save!
+      end
+      @invoice.id
+    end
+  end
+
+  def compute_total_amount(lines)
+    lines.inject(0) do |result, line|
+      result + (line.quantity.to_i * line.price.to_i)
+    end
+  end
+
+  def compute_total_tax(lines)
+    lines.inject(0) do |result, line|
+      # /result + line.tax.to_i
+      0
+    end
+  end
 
   def valid_due_date
     parsed_date = nil
@@ -88,10 +132,20 @@ class LinePresenter
                 :discount_flat, :price, :id
 
   validates :quantity, presence: true
+  validates :price, presence: true
   validates :description, presence: true
 
   def build(invoice_id)
     line_attributes.merge(invoice_id: invoice_id)
+  end
+
+  def save
+    if id
+      line = InvoiceLine.find(id)
+      line.update(line_attributes)
+    else
+      InvoiceLIne.create(line_attributes)
+      end
   end
 
   def line_attributes
@@ -101,7 +155,8 @@ class LinePresenter
       quantity: quantity,
       discount_percentage: discount_percentage,
       discount_flat: discount_flat,
-      price: price
+      price: price,
+      id: id
     }
   end
 end
