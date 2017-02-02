@@ -17,44 +17,39 @@ class InvoicePresenter
       update_invoice
     else
       create_invoice
-    end    
+    end
   end
 
   private
 
-  def create_invoice 
-    Invoice.transaction do      
+  def create_invoice
+    Invoice.transaction do
       @invoice = Invoice.create!(invoice_attributes)
-      lines = invoice_lines.map do |line|
-        LinePresenter.new(line)        
-      end
+      lines = invoice_lines.map { |line| LinePresenter.new(line) }
       @invoice.total_amount = compute_total_amount(lines)
       @invoice.total_tax = compute_total_tax(lines)
       @invoice.save
-      attached_lines = lines.map {|l| l.build(@invoice.id) }
+      attached_lines = lines.map { |l| l.build(@invoice.id) }
       InvoiceLine.create!(attached_lines)
       @invoice.id
     end
   end
 
   def update_invoice
-    Invoice.transaction do       
+    Invoice.transaction do
       @invoice = Invoice.find(id)
-      lines = invoice_lines.map do |line|
-        LinePresenter.new(line)
-      end
-      @invoice.total_amount =compute_total_amount(lines)
+      lines = invoice_lines.map { |line| LinePresenter.new(line) }
+      @invoice.total_amount = compute_total_amount(lines)
       @invoice.total_tax = compute_total_tax(lines)
       @invoice.update_attributes(invoice_attributes)
       # TODO: handle deleted items;
 
-      lines.each do |line|        
-        unless line.id
-          puts 'line is fresh'
-         line_attrs = line.build(@invoice.id)
-          InvoiceLine.create(line_attrs)
-        else
+      lines.each do |line|
+        if id
           line.save
+        else
+          line_attrs = line.build(@invoice.id)
+          InvoiceLine.create(line_attrs)
         end
       end
       @invoice.id
@@ -68,7 +63,7 @@ class InvoicePresenter
   end
 
   def compute_total_tax(lines)
-    lines.inject(0) do |result, line|
+    lines.inject(0) do
       # /result + line.tax.to_f
       0
     end
@@ -79,10 +74,12 @@ class InvoicePresenter
     begin
       parsed_date = Date.strptime(due_date, '%m/%d/%Y')
     rescue
-      errors.add(:due_date, 'inavalid date format, date must be in the format mm/dd/yyyy format')
+      errors.add(:due_date,
+                 'inavalid date format, date must be in the format mm/dd/yyyy format')
       return
     end
-    parsed_date < Date.today && errors.add(:due_date, "due date cannot be today's date' or earlier")
+    parsed_date < Date.today && errors.add(:due_date,
+                                           "due date cannot be today's date' or earlier")
   end
 
   def valid_invoice_date
@@ -145,7 +142,6 @@ class LinePresenter
   def save
     if id
       line = InvoiceLine.find(id)
-      puts "calling update"
       line.update(line_attributes)
     else
       InvoiceLine.create(line_attributes)

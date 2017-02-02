@@ -30,8 +30,8 @@ class InvoicesController < ApplicationController
     invoice_presenter = InvoicePresenter.new(attrs)
     if invoice_presenter.valid?
       invoice_id = invoice_presenter.save
-      updated_invoice = current_tenant.invoices.find(invoice_id)
-      render json: updated_invoice, status: :ok
+      saved_invoice = current_tenant.invoices.find(invoice_id)
+      render json: saved_invoice, serializer: SingleInvoiceSerializer, status: :ok
     else
       render json: invoice_presenter.errors.messages, status: :unprocessable_entity
     end
