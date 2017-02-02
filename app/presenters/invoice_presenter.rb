@@ -12,7 +12,7 @@ class InvoicePresenter
   validate :invoice_lines_not_empty, if: -> { !invoice_lines.nil? }
   validate :absence_of_duplicate_lines, if: -> { !invoice_lines.nil? && !invoice_lines.empty? }
 
-  def save    
+  def save
     if id
       update_invoice
     else
@@ -23,14 +23,12 @@ class InvoicePresenter
   private
 
   def create_invoice 
-    Invoice.transaction do
-      
+    Invoice.transaction do      
       @invoice = Invoice.create!(invoice_attributes)
       lines = invoice_lines.map do |line|
-        line_presenter = LinePresenter.new(line)
-        # line_presenter.build(@invoice.id)
+        LinePresenter.new(line)        
       end
-      @invoice.total_amount =compute_total_amount(lines)
+      @invoice.total_amount = compute_total_amount(lines)
       @invoice.total_tax = compute_total_tax(lines)
       @invoice.save
       attached_lines = lines.map {|l| l.build(@invoice.id) }
@@ -40,19 +38,24 @@ class InvoicePresenter
   end
 
   def update_invoice
-    Invoice.transaction do 
-      compute_total_amount
-      compute_total_tax
+    Invoice.transaction do       
       @invoice = Invoice.find(id)
-      @invoice.save(invoice_attributes)
+      lines = invoice_lines.map do |line|
+        LinePresenter.new(line)
+      end
+      @invoice.total_amount =compute_total_amount(lines)
+      @invoice.total_tax = compute_total_tax(lines)
+      @invoice.update_attributes(invoice_attributes)
       # TODO: handle deleted items;
 
-      invoice_lines.each do |line|
-        line_presenter = LinePresenter.new(line)
-        if(!line.id)
-          line_presenter.build(@invoice.id)        
+      lines.each do |line|        
+        unless line.id
+          puts 'line is fresh'
+         line_attrs = line.build(@invoice.id)
+          InvoiceLine.create(line_attrs)
+        else
+          line.save
         end
-        line_presenter.save!
       end
       @invoice.id
     end
@@ -60,13 +63,13 @@ class InvoicePresenter
 
   def compute_total_amount(lines)
     lines.inject(0) do |result, line|
-      result + (line.quantity.to_i * line.price.to_i)
+      result + (line.quantity.to_f * line.price.to_f)
     end
   end
 
   def compute_total_tax(lines)
     lines.inject(0) do |result, line|
-      # /result + line.tax.to_i
+      # /result + line.tax.to_f
       0
     end
   end
@@ -142,10 +145,11 @@ class LinePresenter
   def save
     if id
       line = InvoiceLine.find(id)
+      puts "calling update"
       line.update(line_attributes)
     else
-      InvoiceLIne.create(line_attributes)
-      end
+      InvoiceLine.create(line_attributes)
+    end
   end
 
   def line_attributes

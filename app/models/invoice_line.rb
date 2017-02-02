@@ -36,6 +36,6 @@ class InvoiceLine < ApplicationRecord
   private
 
   def compute_line_total
-    self.line_total = quantity * price
+    self.line_total = quantity.to_f * price.to_f
   end
 end
