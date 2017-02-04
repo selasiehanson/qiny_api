@@ -3,8 +3,12 @@ class ProductsController < ApplicationController
   before_action :find_product, only: [:show, :update, :destroy]
 
   def index
-    products = current_tenant.products.order(updated_at: :desc)
-    render json: products
+    result = if !params[:page].nil?
+               paged_products(params[:page], params[:size])
+             else
+               unpaged_products
+             end
+    render json: result
   end
 
   def show
@@ -35,6 +39,22 @@ class ProductsController < ApplicationController
   end
 
   private
+
+
+  def paged_products(page_index, size)
+    query = current_tenant
+            .products.order(updated_at: :desc)
+
+    products = query
+            .page(page_index).per(size)
+    { data: products, page: page_index, total_count: query.count }
+  end
+
+  def unpaged_products
+    products = current_tenant
+            .products.order(updated_at: :desc)
+    { data: products }
+  end
 
   def product_params
     params.require(:product).permit(

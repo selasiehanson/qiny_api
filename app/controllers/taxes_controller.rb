@@ -3,8 +3,12 @@ class TaxesController < ApplicationController
   before_action :find_tax, only: [:show, :update, :destroy]
 
   def index
-    taxes = current_tenant.taxes.order(updated_at: :desc)
-    render json: taxes
+    result = if !params[:page].nil?
+               paged_taxes(params[:page], params[:size])
+             else
+               unpaged_taxes
+             end
+    render json: result
   end
 
   def show
@@ -35,6 +39,21 @@ class TaxesController < ApplicationController
   end
 
   private
+
+  def paged_taxes(page_index, size)
+    query = current_tenant
+            .taxes.order(updated_at: :desc)
+
+    taxes = query
+            .page(page_index).per(size)
+    { data: taxes, page: page_index, total_count: query.count }
+  end
+
+  def unpaged_taxes
+    taxes = current_tenant
+            .taxes.order(updated_at: :desc)
+    { data: taxes }
+  end
 
   def tax_params
     params.require(:tax).permit(:name, :description, :amount)

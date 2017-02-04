@@ -5,7 +5,7 @@ class InvoiceSerializer < ActiveModel::Serializer
              :account_id, :total_amount, :total_tax,
              :status, :client, :currency
 
-  has_many :invoice_lines
+  # has_many :invoice_lines
 
   def client
     object.client.name

@@ -1,11 +1,14 @@
 class ClientsController < ApplicationController
-
   rescue_from ActiveRecord::RecordNotFound, with: :client_not_found
   before_action :find_client, only: [:show, :update, :destroy]
 
   def index
-    clients = current_tenant.clients.order(created_at: :desc)
-    render json: clients
+    result = if !params[:page].nil?
+               paged_clients(params[:page], params[:size])
+             else
+               unpaged_clients
+             end
+    render json: result
   end
 
   def show
@@ -37,8 +40,23 @@ class ClientsController < ApplicationController
 
   private
 
+  def paged_clients(page_index, size)
+    query = current_tenant
+            .clients.order(updated_at: :desc)
+
+    clients = query
+              .page(page_index).per(size)
+    { data: clients, meta: { page: page_index, total_count: query.count } }
+  end
+
+  def unpaged_clients
+    clients = current_tenant
+              .clients.order(updated_at: :desc)
+    { data: clients }
+  end
+
   def client_params
-    params.require(:client).permit(:name, :email,:phone_number, :address)
+    params.require(:client).permit(:name, :email, :phone_number, :address)
   end
 
   def find_client
