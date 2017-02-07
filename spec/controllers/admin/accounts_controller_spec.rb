@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe Admin::AccountsController, type: :api do
+  # TODO: admin validation
+
   before do
     @account_one = Account.new(organization_name: 'the shoe shop')
     @account_two = Account.new(organization_name: 'coffee on a lounge')

@@ -25,7 +25,7 @@ class SessionController < ApplicationController
   end
 
   def account_params
-    params.fetch(:credentials, {}).permit(:organization_name)
+    params.fetch(:credentials, {).permit(:organization_name)
   end
 
   def create_account(user, account)
