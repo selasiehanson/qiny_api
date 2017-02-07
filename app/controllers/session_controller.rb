@@ -15,7 +15,7 @@ class SessionController < ApplicationController
   private
 
   def user_params
-    params.require(:credentials).permit(
+    params.fetch(:credentials, {}).permit(
       :first_name,
       :last_name,
       :email,
@@ -25,31 +25,12 @@ class SessionController < ApplicationController
   end
 
   def account_params
-    params.require(:credentials).permit(:organization_name)
+    params.fetch(:credentials, {}).permit(:organization_name)
   end
 
-  # Wrap in transaction if possible
   def create_account(user, account)
-    User.transaction do
-      user.save
-      account.created_by = user.id
-      account.save
-
-      user_account_detail = AccountDetail.new
-      user_account_detail.user = user
-      user_account_detail.account = account
-      user_account_detail.role = 'admin'
-
-      user_account_detail.save
-      {
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        role: user_account_detail.role,
-        organization_name: account.organization_name,
-        created_at: user_account_detail.created_at
-      }
-    end
+    account_service = AccountService.new(user, account)
+    account_service.create_account
   end
 
   def get_registration_errors(user, account)
