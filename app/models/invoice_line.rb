@@ -25,17 +25,14 @@ class InvoiceLine < ApplicationRecord
   validates :discount_percentage, numericality: {
     greater_than_or_equal: 0, less_than_or_equal_to: 100
   }
+
   validates :discount_flat, numericality: { greater_than_or_equal: 0 }
   validates :price, numericality: { greater_than: 0 }
+  # validates :quantity, presence: true
+  # validates :price, presence: true
+  validates :description, presence: true
 
   belongs_to :invoice
   belongs_to :product
-
-  before_save :compute_line_total
-
-  private
-
-  def compute_line_total
-    self.line_total = quantity.to_f * price.to_f
-  end
+  
 end

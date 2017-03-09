@@ -17,11 +17,22 @@ class InvoicesController < ApplicationController
   end
 
   def create
-    create_or_update
+    attrs = invoice_params.merge(account_id: current_tenant.id)
+    invoice = Invoice.new(attrs)
+    invoice.invoice_lines.build(invoice_lines_params[:invoice_lines])
+    if invoice.valid?
+      saved_invoice = InvoiceService.save_invoice(invoice)
+      # saved_invoice = current_tenant.invoices.find(invoice_id)
+      render json: saved_invoice,
+             serializer: SingleInvoiceSerializer, status: :ok
+    else
+      render json: invoice.errors.messages,
+             status: :unprocessable_entity
+    end
   end
 
   def update
-    create_or_update
+    create_or_update(params[:id])
   end
 
   private
@@ -45,11 +56,15 @@ class InvoicesController < ApplicationController
     { data: invoices }
   end
 
-  def create_or_update
+  def create_or_update(_id = 0)
     attrs = invoice_params.merge(account_id: current_tenant.id)
     invoice_presenter = InvoicePresenter.new(attrs)
     if invoice_presenter.valid?
-      invoice_id = invoice_presenter.save
+      if id.zero?
+        invoice_id = InvoiceService.create_invoice(invoice_presenter)
+      else
+        invoice_id = InvoiceService.update_invoice(invoice_presenter)
+      end
       saved_invoice = current_tenant.invoices.find(invoice_id)
       render json: saved_invoice,
              serializer: SingleInvoiceSerializer, status: :ok
@@ -62,8 +77,12 @@ class InvoicesController < ApplicationController
   def invoice_params
     params.require(:invoice)
           .permit(:invoice_date, :due_date, :notes, :client_id, :currency_id,
-                  :invoice_number, :id,
-                  invoice_lines: [:invoice_id, :product_id, :quantity, :id,
+                  :invoice_number, :id)
+  end
+
+  def invoice_lines_params
+    params.require(:invoice)
+          .permit(invoice_lines: [:invoice_id, :product_id, :quantity, :id, :description,
                                   :discount_percentage, :discount_flat, :price])
   end
 

@@ -1,11 +1,12 @@
 class ApplicationController < ActionController::API
   include Knock::Authenticable
   attr_reader :tenant
-  before_action :log_request
+  # before_action :log_request
   before_action :authenticate_user
   before_action :switch_tenant
 
   def log_request
+    p request.headers
     p request.headers['Authorization']
   end
 

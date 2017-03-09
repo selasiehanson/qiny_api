@@ -12,17 +12,21 @@ class AccountService
       @account.created_by = @user.id
       @account.save
 
-      user_account_detail = AccountDetail.new
-      user_account_detail.user = user
-      user_account_detail.account = account
-      user_account_detail.role = 'admin'
-
+      user_account_detail = create_account_detail(user, account)
       user_account_detail.save
       new_account_created(user, account, user_account_detail)
     end
- end
+  end
 
   private
+
+  def create_account_detail(user, account)
+    user_account_detail = AccountDetail.new
+    user_account_detail.user = user
+    user_account_detail.account = account
+    user_account_detail.role = 'admin'
+    user_account_detail
+  end
 
   def new_account_created(user, account, user_account_detail)
     {
@@ -35,5 +39,5 @@ class AccountService
       organization_name: account.organization_name,
       created_at: user_account_detail.created_at
     }
- end
+  end
 end
