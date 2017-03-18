@@ -22,16 +22,19 @@ RSpec.describe InvoicesController, type: :api do
         url = "#{@account_id}/invoices"
         token = valid_auth(@user_id)
 
+        date_format = '%Y/%m/%d'
+        invoice_date = Date.today.strftime(date_format)
         data = {
-          invoice_date: Date.today.strftime('%m/%d/%Y'),
+          invoice_date: invoice_date,
           currency_id: create_currency.id,
           client_id: create_client(@account_id).id,
-          due_date:  1.days.from_now.strftime('%m/%d/%Y'),
+          due_date:  1.days.from_now.strftime(date_format),
           invoice_lines: create_invoice_lines(@products)
         }
-        
+
         post url, { invoice: data }, auth_header(token)
       end
+
       it 'creates an invoice' do
         expect(json[':id']).not_to eq(0)
         expect(last_response.status).to eq(200)

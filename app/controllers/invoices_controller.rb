@@ -22,7 +22,6 @@ class InvoicesController < ApplicationController
     invoice.invoice_lines.build(invoice_lines_params[:invoice_lines])
     if invoice.valid?
       saved_invoice = InvoiceService.save_invoice(invoice)
-      # saved_invoice = current_tenant.invoices.find(invoice_id)
       render json: saved_invoice,
              serializer: SingleInvoiceSerializer, status: :ok
     else

@@ -1,2 +1,2 @@
-log/development.log
+log/*.log
 tmp/pids/

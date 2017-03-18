@@ -34,9 +34,6 @@ class Invoice < ApplicationRecord
   }
 
   validates :invoice_date, :due_date, presence: true
-  validates :invoice_lines, presence: true
-  # validate :valid_due_date
-  # validate :valid_invoice_date
   validate :invoice_lines_not_empty, if: -> { !invoice_lines.nil? }
   validate :absence_of_duplicate_lines, if: -> { !invoice_lines.nil? && !invoice_lines.empty? }
 
@@ -60,31 +57,6 @@ class Invoice < ApplicationRecord
   end
 
   private
-  def valid_due_date
-    puts "due date is #{due_date}"
-    parsed_date = nil
-    begin
-      parsed_date = Date.strptime(due_date, '%m/%d/%Y')
-    rescue
-      errors.add(:due_date,
-                 'invalid date format, date must be in the format mm/dd/yyyy format')
-      return
-    end
-    parsed_date < Date.today && errors.add(:due_date,
-                                           "due date cannot be today's date' or earlier")
-  end
-
-  def valid_invoice_date
-    puts "invoice date is #{invoice_date}"
-    parsed_date = nil
-    begin
-      parsed_date = Date.strptime(invoice_date, '%m/%d/%Y')
-    rescue
-      errors.add(:invoice_date, 'invalid date format, date must be in the format mm/dd/yyyy format')
-      return
-    end
-    parsed_date < Date.today && errors.add(:invoice_date, "invoice date cannot be today's date' or earlier")
-  end
 
   def invoice_lines_not_empty
     invoice_lines.empty? && errors.add(:invoice_lines, 'invoice must contain at least one item')
