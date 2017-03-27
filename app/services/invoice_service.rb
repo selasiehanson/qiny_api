@@ -2,6 +2,7 @@ class InvoiceService
   def self.save_invoice(invoice)
     invoice.total_amount = compute_total_amount(invoice.invoice_lines)
     invoice.total_tax = compute_total_tax(invoice.invoice_lines)
+    invoice.status = :draft
     invoice.invoice_lines.map do |line|
       compute_line_total(line)
     end

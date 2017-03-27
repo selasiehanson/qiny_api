@@ -52,7 +52,7 @@ class InvoicesController < ApplicationController
     invoices = current_tenant
                .invoices
                .includes(:invoice_lines).order(updated_at: :desc)
-    { data: invoices }
+    { data: invoices, meta: {}}
   end
 
   def create_or_update(_id = 0)

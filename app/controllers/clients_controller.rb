@@ -52,7 +52,7 @@ class ClientsController < ApplicationController
   def unpaged_clients
     clients = current_tenant
               .clients.order(updated_at: :desc)
-    { data: clients }
+    { data: clients , meta: {}}
   end
 
   def client_params

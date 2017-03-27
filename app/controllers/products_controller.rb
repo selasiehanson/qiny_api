@@ -53,7 +53,7 @@ class ProductsController < ApplicationController
   def unpaged_products
     products = current_tenant
             .products.order(updated_at: :desc)
-    { data: products }
+    { data: products, meta: {} }
   end
 
   def product_params

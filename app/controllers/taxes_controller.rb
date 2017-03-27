@@ -52,7 +52,7 @@ class TaxesController < ApplicationController
   def unpaged_taxes
     taxes = current_tenant
             .taxes.order(updated_at: :desc)
-    { data: taxes }
+    { data: taxes, meta: {} }
   end
 
   def tax_params

@@ -30,9 +30,9 @@ class InvoiceLine < ApplicationRecord
   validates :price, numericality: { greater_than: 0 }
   # validates :quantity, presence: true
   # validates :price, presence: true
-  validates :description, presence: true
+  # validates :description, presence: true
 
   belongs_to :invoice
   belongs_to :product
-  
+
 end
